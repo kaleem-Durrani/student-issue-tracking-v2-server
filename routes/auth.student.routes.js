@@ -3,7 +3,9 @@ import { body } from "express-validator";
 import {
   loginStudent,
   logoutStudent,
+  requestNewOtp,
   signupStudent,
+  verifyOtpStudent,
 } from "../controllers/auth.student.controller.js";
 
 const router = express.Router();
@@ -68,5 +70,9 @@ router.post("/signup", signupValidation, signupStudent);
 router.post("/login", loginValidation, loginStudent);
 
 router.post("/logout", logoutStudent);
+
+router.post("/verify-otp", otpValidation, verifyOtpStudent);
+
+router.post("/request-new-otp", requestNewOtp);
 
 export default router;

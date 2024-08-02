@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs";
 import sendEmail from "../utils/sendEmail.js";
 import { validationResult } from "express-validator";
 import generateToken from "../utils/generateToken.js";
+import jwt from "jsonwebtoken";
 
 const generateOtp = () => {
   // create a six digit otp
@@ -64,7 +65,11 @@ export const signupStudent = async (req, res) => {
         await existingStudent.save();
 
         //   send new otp to email
-        await sendEmail(email, "Your OTP Code", `Your new OTP code is ${otp}`);
+        await sendEmail(
+          email,
+          "SIT OTP Code",
+          `Welcome to Student Issue Tracking Sytem, Your OTP code is ${otp}\nIf you have not requested the OTP please ignore this email.`
+        );
 
         return res.status(200).json({
           message: "New OTP sent to email.",
@@ -85,7 +90,11 @@ export const signupStudent = async (req, res) => {
 
     Promise.all([
       await newStudent.save(),
-      await sendEmail(email, "Your OTP Code", `Your OTP code is ${otp}`),
+      await sendEmail(
+        email,
+        "SIT OTP Code",
+        `Welcome to Student Issue Tracking Sytem, Your OTP code is ${otp}\nIf you have not requested the OTP please ignore this email.`
+      ),
     ]);
 
     generateToken(newStudent._id, newStudent.isVerified, res);
@@ -146,5 +155,120 @@ export const logoutStudent = (req, res) => {
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+// @desc students verify the otp when a new account is created
+// @route /api/auth/student/verify-otp
+// @access student
+export const verifyOtpStudent = async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    let errorMsg = "";
+
+    errors
+      .array()
+      .forEach((error) => (errorMsg += `for: ${error.path}, ${error.msg} \n`));
+    return res.status(400).json({ error: errorMsg });
+  }
+
+  const { otp } = req.body;
+
+  const token = req.cookies.jwt;
+
+  if (!token) {
+    return res.status(401).json({ error: "Access Denied, No token provided." });
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    const studentId = decoded.userId;
+
+    const student = await Student.findById(studentId);
+
+    if (!student) return res.status(404).json({ error: "Student not found" });
+
+    if (student.isVerified) {
+      return res.status(400).json({ error: "Account already verified" });
+    }
+
+    if (student.otp !== otp) {
+      return res.status(401).json({ error: "Invalid OTP" });
+    }
+
+    if (student.otpExpiry < Date.now()) {
+      return res
+        .status(401)
+        .json({ error: "OTP expired \nPlease request another" });
+    }
+
+    student.isVerified = true;
+    student.otp = null;
+    student.otpExpiry = null;
+    await student.save();
+
+    generateToken(student._id, student.isVerified, res);
+
+    res.status(200).json({ message: "Account verified successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server error" });
+  }
+};
+
+// @desc students request new otp if the current one has expired
+// @route /api/auth/student/request-new-otp
+// @access student
+export const requestNewOtp = async (req, res) => {
+  const token = req.cookies.jwt;
+
+  if (!token) {
+    return res.status(401).json({ error: "Access Denied, No token provided." });
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const studentId = decoded.userId;
+
+    const student = await Student.findById(studentId);
+    if (!student) return res.status(404).json({ error: "Student not found" });
+
+    if (student.isVerified) {
+      return res.status(400).json({ error: "Account already verified" });
+    }
+
+    // check for otp expiry if otp has not expired yet return error
+    if (student.otpExpiry > Date.now()) {
+      const remainingTime = (student.otpExpiry - Date.now()) / 1000;
+      return res.status(400).json({
+        error: `OTP already sent. Verify Account or Try again in ${Math.ceil(
+          remainingTime
+        )} seconds`,
+      });
+    }
+
+    // Generate new OTP
+    const otp = generateOtp();
+    const otpExpiry = Date.now() + 15 * 60 * 1000; // 15 minutes from now
+
+    student.otp = otp;
+    student.otpExpiry = otpExpiry;
+
+    Promise.all([
+      await student.save(),
+      await sendEmail(
+        customer.email,
+        "Your OTP Code",
+        `Your OTP code is ${otp}`
+      ),
+    ]);
+
+    res
+      .status(200)
+      .json({ message: `New OTP sent to email. \n${student.email}` });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server error" });
   }
 };
