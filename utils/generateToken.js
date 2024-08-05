@@ -1,9 +1,15 @@
 import jwt from "jsonwebtoken";
 
-const generateToken = (userId, isVerified, res) => {
-  const token = jwt.sign({ userId, isVerified }, process.env.JWT_SECRET, {
-    expiresIn: "7d",
-  });
+// conditionally generates jwt tokens if its a student the admin type is ignored
+// if its an admin then the admin type is also included in the token
+const generateToken = (res, userId, isVerified, adminType) => {
+  const token = jwt.sign(
+    adminType ? { userId, isVerified, adminType } : { userId, isVerified },
+    process.env.JWT_SECRET,
+    {
+      expiresIn: "7d",
+    }
+  );
 
   res.cookie("jwt", token, {
     maxAge: 15 * 24 * 60 * 60 * 1000,

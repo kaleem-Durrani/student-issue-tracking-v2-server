@@ -14,7 +14,13 @@ const adminSchema = new mongoose.Schema(
     type: {
       type: String,
       required: true,
-      enum: ["mainAdmin", "departmentAdmin"],
+      enum: [
+        "mainAdmin",
+        "Transport",
+        "Academic",
+        "Discipline",
+        "Student Affairs",
+      ],
     },
     password: {
       type: String,

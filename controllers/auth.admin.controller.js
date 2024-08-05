@@ -33,7 +33,7 @@ export const loginAdmin = async (req, res) => {
       return res.status(404).json({ error: "Invalid email or password" });
     }
 
-    generateToken(admin._id, admin.isVerfied, res);
+    generateToken(res, admin._id, admin.isVerfied, admin.type);
 
     res.status(200).json({ message: "Admin Login Successful" });
   } catch (error) {

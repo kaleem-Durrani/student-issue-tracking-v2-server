@@ -97,7 +97,7 @@ export const signupStudent = async (req, res) => {
       ),
     ]);
 
-    generateToken(newStudent._id, newStudent.isVerified, res);
+    generateToken(res, newStudent._id, newStudent.isVerified);
 
     res.status(201).json({
       message:
@@ -136,7 +136,7 @@ export const loginStudent = async (req, res) => {
     if (!isMatch)
       return res.status(401).json({ error: "Invalid email or password" });
 
-    generateToken(student._id, student.isVerified, res);
+    generateToken(res, student._id, student.isVerified);
 
     res.status(200).json({ message: "Login successful" });
   } catch (error) {
@@ -208,7 +208,7 @@ export const verifyOtpStudent = async (req, res) => {
     student.otpExpiry = null;
     await student.save();
 
-    generateToken(student._id, student.isVerified, res);
+    generateToken(res, student._id, student.isVerified);
 
     res.status(200).json({ message: "Account verified successfully" });
   } catch (error) {
