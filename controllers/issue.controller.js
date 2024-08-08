@@ -27,7 +27,7 @@ export const addIssue = async (req, res) => {
       priority,
       department,
       description,
-      student: studentId,
+      createdBy: studentId,
     });
 
     await newIssue.save();
@@ -40,20 +40,24 @@ export const addIssue = async (req, res) => {
 };
 
 // @desc Students gets his posted issues
-// @route /api/issue/get-issues-student
+// @route /api/issue/get-student-issues
 // @access student
 export const getStudentIssues = async (req, res) => {
   const studentId = req.student._id;
 
   try {
     // find a students posted issues in the database
-    const issues = await Issue.find({ createdBy: studentId }).sort({
-      createdAt: -1,
-    });
+    const issues = await Issue.find({ createdBy: studentId })
+      .sort({
+        createdAt: -1,
+      })
+      .populate("createdBy", "name cms email department");
 
     // if no issues are found
     if (issues.length === 0) {
-      return res.status(404).json({ error: "No issues found" });
+      return res
+        .status(404)
+        .json({ error: "No issues found for this student" });
     }
 
     res.status(200).json({ message: "Issues retreived successfully", issues });
@@ -68,10 +72,12 @@ export const getStudentIssues = async (req, res) => {
 // @access main admin
 export const getAllIssues = async (req, res) => {
   try {
-    const issues = await Issue.find().sort({ createdAt: -1 });
+    const issues = await Issue.find()
+      .sort({ createdAt: -1 })
+      .populate("createdBy", "name email cms department");
 
     if (issues.length === 0) {
-      return res.status(404).json({ error: "No issues found" });
+      return res.status(404).json({ error: "No issues found in the database" });
     }
 
     res.status(200).json({ message: "Issues retreived successfully", issues });
@@ -89,7 +95,16 @@ export const getDepartmentIssues = async (req, res) => {
 
   try {
     const department = departmentAdmin.type;
-    const issues = await Issue.find({ department }).sort({ createdAt: -1 });
+
+    // find issues by department where status is not equal to Pending or Rejected
+    const issues = await Issue.find({
+      department,
+      status: { $nin: ["Pending", "Rejected"] },
+    })
+      .sort({
+        createdAt: -1,
+      })
+      .populate("createdBy", "name cms email department");
 
     if (issues.length === 0) {
       return res

@@ -64,6 +64,13 @@ export const signupStudent = async (req, res) => {
 
         await existingStudent.save();
 
+        generateToken(
+          res,
+          existingStudent._id,
+          existingStudent.isVerified,
+          "student"
+        );
+
         //   send new otp to email
         await sendEmail(
           email,
@@ -73,6 +80,11 @@ export const signupStudent = async (req, res) => {
 
         return res.status(200).json({
           message: "New OTP sent to email.",
+          user: {
+            userId: existingStudent._id,
+            isVerified: existingStudent.isVerified,
+          },
+          userType: "student",
         });
       }
     }
@@ -97,11 +109,16 @@ export const signupStudent = async (req, res) => {
       ),
     ]);
 
-    generateToken(res, newStudent._id, newStudent.isVerified);
+    generateToken(res, newStudent._id, newStudent.isVerified, "student");
 
     res.status(201).json({
       message:
         "Student Account created successfully otp sent to email, Please login and verify yout Account",
+      user: {
+        userId: newStudent._id,
+        isVerified: newStudent.isVerified,
+      },
+      userType: "student",
     });
   } catch (error) {
     console.error(error);
@@ -136,9 +153,16 @@ export const loginStudent = async (req, res) => {
     if (!isMatch)
       return res.status(401).json({ error: "Invalid email or password" });
 
-    generateToken(res, student._id, student.isVerified);
+    generateToken(res, student._id, student.isVerified, "student");
 
-    res.status(200).json({ message: "Login successful" });
+    res.status(200).json({
+      message: "Login successful",
+      user: {
+        userId: student._id,
+        isVerified: student.isVerified,
+      },
+      userType: "student",
+    });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: "Internal Server Error" });
@@ -208,9 +232,16 @@ export const verifyOtpStudent = async (req, res) => {
     student.otpExpiry = null;
     await student.save();
 
-    generateToken(res, student._id, student.isVerified);
+    generateToken(res, student._id, student.isVerified, "student");
 
-    res.status(200).json({ message: "Account verified successfully" });
+    res.status(200).json({
+      message: "Account verified successfully",
+      user: {
+        userId: student._id,
+        isVerified: student.isVerified,
+      },
+      userType: "student",
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal Server error" });
@@ -258,7 +289,7 @@ export const requestNewOtp = async (req, res) => {
     Promise.all([
       await student.save(),
       await sendEmail(
-        customer.email,
+        student.email,
         "Your OTP Code",
         `Your OTP code is ${otp}`
       ),

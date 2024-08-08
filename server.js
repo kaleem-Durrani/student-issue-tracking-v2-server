@@ -6,6 +6,9 @@ import connectToMongoDB from "./db/connectToMongoDB.js";
 
 import authStudentRoutes from "./routes/auth.student.routes.js";
 import authAdminRoutes from "./routes/auth.admin.routes.js";
+import checkAuthRoutes from "./routes/checkAuth.routes.js";
+
+import issueRoutes from "./routes/isuue.routes.js";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -24,6 +27,10 @@ app.use(
 
 app.use("/api/auth/student", authStudentRoutes);
 app.use("/api/auth/admin", authAdminRoutes);
+
+app.use("/api/auth/check-auth", checkAuthRoutes);
+
+app.use("/api/issue", issueRoutes);
 
 app.get("/", (req, res) => {
   res.send("Hello World!");

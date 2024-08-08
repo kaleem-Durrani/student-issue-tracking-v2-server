@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import Admin from "../models/student.model.js";
+import Admin from "../models/admin.model.js";
 
 const JWT_SECRET = process.env.JWT_SECRET;
 

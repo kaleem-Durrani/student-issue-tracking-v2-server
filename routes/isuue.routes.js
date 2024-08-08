@@ -1,6 +1,6 @@
 import express from "express";
 import { body } from "express-validator";
-import protectStudentRoute from "../middleware/protectStudentRoute";
+import protectStudentRoute from "../middleware/protectStudentRoute.js";
 import {
   addIssue,
   assignIssue,
@@ -9,9 +9,9 @@ import {
   getStudentIssues,
   rejectIssue,
   updateIssueStatus,
-} from "../controllers/issue.controller";
-import protectAdminRoute from "../middleware/protectAdminRoute";
-import protectDepartmentAdminRoute from "../middleware/protectDepartmentAdminRoute";
+} from "../controllers/issue.controller.js";
+import protectAdminRoute from "../middleware/protectAdminRoute.js";
+import protectDepartmentAdminRoute from "../middleware/protectDepartmentAdminRoute.js";
 
 const router = express.Router();
 
@@ -27,7 +27,7 @@ const addIssueValidation = [
     .trim()
     .notEmpty()
     .isIn(["Transport", "Academic", "Discipline", "Student Affairs"])
-    .withMessage("Category is required"),
+    .withMessage("Department is required"),
   body("description").trim().notEmpty().withMessage("Description is required"),
 ];
 
@@ -77,12 +77,6 @@ router.get("/get-student-issues", protectStudentRoute, getStudentIssues);
 
 router.get("/get-all-issues", protectAdminRoute, getAllIssues);
 
-router.get(
-  "/get-department-issues",
-  protectDepartmentAdminRoute,
-  getDepartmentIssues
-);
-
 router.put(
   "/assign-issue",
   assignIssueValidation,
@@ -97,8 +91,14 @@ router.put(
   rejectIssue
 );
 
+router.get(
+  "/get-department-issues",
+  protectDepartmentAdminRoute,
+  getDepartmentIssues
+);
+
 router.put(
-  "update-issue-status",
+  "/update-issue-status",
   updateIssueStatusValidation,
   protectDepartmentAdminRoute,
   updateIssueStatus

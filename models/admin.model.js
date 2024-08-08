@@ -27,7 +27,7 @@ const adminSchema = new mongoose.Schema(
       required: true,
       minlength: 6,
     },
-    isVerfied: {
+    isVerified: {
       type: Boolean,
       default: false,
     },
