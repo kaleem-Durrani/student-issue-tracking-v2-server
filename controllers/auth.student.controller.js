@@ -174,7 +174,14 @@ export const loginStudent = async (req, res) => {
 // @access student
 export const logoutStudent = (req, res) => {
   try {
-    res.cookie("jwt", "", { maxAge: 0 });
+    res.cookie("jwt", "", {
+      maxAge: 0, // Expire the cookie immediately
+      httpOnly: true,
+      sameSite: "none",
+      secure: process.env.NODE_ENV !== "development",
+      // domain: process.env.COOKIE_DOMAIN || undefined, // Make sure this matches what you used when setting the cookie
+      path: "/", // Ensure the path is set correctly
+    });
     res.status(200).json({ message: "Logged out successfully" });
   } catch (error) {
     console.error(error);

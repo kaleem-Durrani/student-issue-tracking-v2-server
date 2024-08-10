@@ -13,8 +13,8 @@ const generateToken = (res, userId, isVerified, userType, adminType) => {
 
   res.cookie("jwt", token, {
     maxAge: 15 * 24 * 60 * 60 * 1000,
-    httpOnly: false,
-    sameSite: "strict",
+    httpOnly: true,
+    sameSite: "none",
     secure: process.env.NODE_ENV !== "development",
   });
 };
