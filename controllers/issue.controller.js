@@ -171,12 +171,12 @@ export const rejectIssue = async (req, res) => {
     return res.status(400).json({ error: errorMsg });
   }
 
-  const { issueId } = req.body;
+  const { issueId, comment } = req.body;
 
   try {
     const issue = await Issue.findByIdAndUpdate(
       issueId,
-      { status: "Rejected" },
+      { status: "Rejected", comment: comment },
       { new: true }
     );
 
@@ -206,14 +206,22 @@ export const updateIssueStatus = async (req, res) => {
     return res.status(400).json({ error: errorMsg });
   }
 
-  const { issueId, status } = req.body;
+  const { issueId, status, comment } = req.body;
 
   try {
-    const issue = await Issue.findByIdAndUpdate(
-      issueId,
-      { status },
-      { new: true }
-    );
+    // if statues === Rejected then update status and comment  otherwise only update status
+
+    let issue;
+
+    if (status === "Resolved") {
+      issue = await Issue.findByIdAndUpdate(
+        issueId,
+        { status, comment },
+        { new: true }
+      );
+    } else {
+      issue = await Issue.findByIdAndUpdate(issueId, { status }, { new: true });
+    }
 
     if (!issue) {
       return res.status(404).json({ error: "Issue not found" });

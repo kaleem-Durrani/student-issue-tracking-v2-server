@@ -40,6 +40,11 @@ const issueSchema = new mongoose.Schema(
       enum: ["Pending", "Assigned", "In Progress", "Resolved", "Rejected"],
       default: "Pending",
     },
+    comment: {
+      type: String,
+      default: null,
+      maxlength: 5000,
+    },
   },
   { timestamps: true }
 );

@@ -56,6 +56,11 @@ const rejectIssueValidation = [
     .notEmpty()
     .isString()
     .withMessage("Issue Id is required"),
+  body("comment")
+    .trim()
+    .notEmpty()
+    .isString()
+    .withMessage("Rejection Reason is required"),
 ];
 
 const updateIssueStatusValidation = [
@@ -69,6 +74,12 @@ const updateIssueStatusValidation = [
     .notEmpty()
     .isIn(["Assigned", "In Progress", "Resolved"])
     .withMessage("Status is required"),
+  // if stauts is === "Resolved then comment is required in the body
+  body("comment", "A comment is required as to how the issue was resolved")
+    .if((value, { req }) => req.body.status === "Resolved")
+    .trim()
+    .notEmpty()
+    .isString(),
 ];
 
 router.post("/create-issue", addIssueValidation, protectStudentRoute, addIssue);
