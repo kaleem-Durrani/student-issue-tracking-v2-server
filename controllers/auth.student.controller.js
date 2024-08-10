@@ -45,8 +45,8 @@ export const signupStudent = async (req, res) => {
     // if student exists but is not verified, update thier details
     if (existingStudent && !existingStudent.isVerified) {
       // Check if OTP is still valid
-      if (existingCustomer.otpExpiry > Date.now()) {
-        const remainingTime = (existingCustomer.otpExpiry - Date.now()) / 1000;
+      if (existingStudent.otpExpiry > Date.now()) {
+        const remainingTime = (existingStudent.otpExpiry - Date.now()) / 1000;
         return res.status(400).json({
           error: `OTP already sent. Verify Account or Try again in ${Math.ceil(
             remainingTime
