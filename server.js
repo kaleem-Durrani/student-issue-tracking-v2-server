@@ -20,8 +20,10 @@ app.use(cookieParser());
 
 app.use(
   cors({
+    origin: "https://student-issue-tracking.netlify.app",
+    methods: "GET,POST,PUT,DELETE,OPTIONS",
+    allowedHeaders: "Content-Type,Authorization",
     credentials: true,
-    origin: "http://localhost:3000",
   })
 );
 
